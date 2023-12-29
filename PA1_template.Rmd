@@ -2,7 +2,9 @@
 title: "PA1"
 author: "Wei Jiang"
 date: "2023-12-26"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=TRUE}
@@ -28,22 +30,33 @@ df <- df %>% mutate(df, day = weekdays(df$date))
 **3.Make a histogram of the total number of steps taken each day. **
 ```{r }
 # Calculate and report the mean and median total number of steps taken per day
-data <- df %>% group_by(date) %>% summarise(total=sum(steps))
+data <- df %>% group_by(date) %>% summarise(total=sum(steps,na.rm = TRUE))
 Mean <- as.integer(mean(data$total, na.rm = TRUE))
 Median  <- median(data$total, na.rm = TRUE)
+hist(data$total, breaks=9, xlab="Total steps per day")
 ```
-**The mean of daily steps is `r Mean`, median of daily steps is `r Median`. **
-
-```{r plot, fig.width=10, fig.height=5}
-# Plotting the histogram
-ggplot(data, aes(x = as.character(date), y = total)) +
-  geom_bar(stat = "identity", fill = "skyblue", width = 0.7) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 5)) +
-  scale_y_continuous(limits = c(0, max(data$total, na.rm = TRUE) + 1000)) +
-  labs(x = "Date", y = "Number of steps", title = "Histogram of Daily Steps") +
-  theme(plot.title = element_text(hjust = 0.5))
-
+```{r Mean}
+print(Mean)
 ```
+
+```{r Median}
+print(Median)
+```
+
+```{r }
+# 5 minutes interval plot  the average number of steps
+data <- df %>% group_by(interval) %>% summarise(Mean=mean(steps, na.rm=TRUE))
+plot(x = data$interval, y = data$Mean, type = "l", ylab = "Number of steps", xlab = "Interval")
+
+# max steps of interval
+
+max_indexes <- which.max(data$Mean)
+# print interval with the max steps
+print(data$interval[max_indexes])
+# the max steps
+print(data$Mean[max_indexes])
+```
+
 
 ### Imputing missing values.   
 
@@ -51,10 +64,10 @@ ggplot(data, aes(x = as.character(date), y = total)) +
 
 ```{r  }
 n_miss <- sum(is.na(df)) # num of missing values
+
+# print numbers of missing values
+print(n_miss)
 ```
-
-There are total 2304 missing values in the dataset..
-
 
 **2.Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc..**
 
@@ -93,23 +106,23 @@ head(df_na_free)
 
 **4.Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?..**
 
+```{r plot}
+data <- df_na_free %>% group_by(date) %>% summarise(total=sum(steps))
+hist(data$total, breaks=9, xlab="Total steps per day")
+```
+
+
 ```{r }
 # Calculate and report the mean and median total number of steps taken per day
 data <- df_na_free %>% group_by(date) %>% summarise(total=sum(steps))
 Mean <- as.integer(mean(data$total, na.rm = TRUE))
 Median  <- median(data$total, na.rm = TRUE)
+# print Mean and median without missing value
+cat ("Mean of daily steps is", Mean, "\n")
+cat ("Median of daily steps is", Median, "\n")
 ```
 
-```{r fig.width=10, fig.height=5}
-# Plotting the histogram
-ggplot(data, aes(x = as.character(date), y = total)) +
-  geom_bar(stat = "identity", fill = "skyblue", width = 0.7) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 5)) +
-  scale_y_continuous(limits = c(0, max(data$total, na.rm = TRUE) + 1000)) +
-  labs(x = "Date", y = "Number of steps", title = "Histogram of Daily Steps") +
-  theme(plot.title = element_text(hjust = 0.5))
 
-```
 
 ### Are there differences in activity patterns between weekdays and weekends?..
 ** 1.Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.**
